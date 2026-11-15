@@ -2,7 +2,6 @@
 
 **Thanh Hà Coffee** là ứng dụng web hỗ trợ quản lý nhân viên, lịch làm việc, chấm công và tính lương theo giờ cho quán cà phê. Hệ thống tập trung thông tin vào một nơi, giúp chủ quán và nhân viên theo dõi công việc thuận tiện hơn.
 
-Dự án được thực hiện trong học phần **Phân tích thiết kế hệ thống** tại Khoa Thống kê – Tin học, Trường Đại học Kinh tế – Đại học Đà Nẵng.
 
 ## Chức năng chính
 
