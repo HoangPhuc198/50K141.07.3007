@@ -11,6 +11,7 @@ import {
   countUnreadNotifications,
   deduplicateNotificationsByEvent,
   filterAndCapNotifications,
+  filterUnreadNotifications,
   formatNotificationBellCount,
   getThongBaoDaDocStorageKey,
   getThongBaoDaHienStorageKey,
@@ -758,5 +759,87 @@ describe("Chống lặp, hết hạn 7 ngày, giới hạn 50 và chống bật 
     } finally {
       await cleanup95();
     }
+  });
+});
+
+describe("filterUnreadNotifications - đồng bộ card Thông báo của bạn (trừ thông báo đã xem)", () => {
+  it("loại bỏ các thông báo đã đọc, giữ đúng thứ tự mới nhất trước và trả về rỗng khi đã đọc hết", () => {
+    const now = new Date("2026-11-16T10:00:00");
+    const items: ThongBaoCoKhoa[] = [
+      {
+        id: "DC-1",
+        khoa: "doi-ca-kq:1:NV001",
+        nhom: "thong-tin",
+        mocThoiGian: "2026-11-16T09:00:00",
+        tieuDe: "Đơn xin đổi ca đã được xử lý",
+        thoiGian: "16/11",
+        chiTiet: "Chi tiết 1",
+      },
+      {
+        id: "BS-2",
+        khoa: "bo-sung-kq:2:2026-11-15",
+        nhom: "thong-tin",
+        mocThoiGian: "2026-11-15T18:00:00",
+        tieuDe: "Yêu cầu bổ sung chấm công đã xử lý",
+        thoiGian: "15/11",
+        chiTiet: "Chi tiết 2",
+      },
+      {
+        id: "DC-OLD",
+        khoa: "doi-ca-kq:old:NV001",
+        nhom: "thong-tin",
+        mocThoiGian: "2026-11-01T08:00:00",
+        tieuDe: "Thông báo cũ",
+        thoiGian: "01/11",
+        chiTiet: "Quá 7 ngày",
+      },
+      {
+        id: "BL-1",
+        khoa: "luong:KL202611:Dự kiến",
+        nhom: "bang-luong",
+        mocThoiGian: "2026-11-14T00:00:00",
+        tieuDe: "Bảng lương tháng 11",
+        thoiGian: "14/11",
+        chiTiet: "Chi tiết lương",
+      },
+    ];
+
+    const unreadInitial = filterUnreadNotifications(items, [], now);
+    // DC-OLD quá 7 ngày bị loại; 3 mục còn lại giữ nguyên thứ tự mới -> cũ
+    expect(unreadInitial.map((e) => e.item.id)).toEqual(["DC-1", "BS-2", "BL-1"]);
+    expect(unreadInitial.every((e) => e.isRead === false)).toBe(true);
+
+    // Đọc DC-1 -> trừ ra ngay, chỉ còn BS-2 và BL-1
+    const afterReadOne = filterUnreadNotifications(
+      items,
+      ["doi-ca-kq:1:NV001"],
+      now
+    );
+    expect(afterReadOne.map((e) => e.item.id)).toEqual(["BS-2", "BL-1"]);
+
+    // Đọc hết các mục còn hạn -> trả về []
+    const afterReadAll = filterUnreadNotifications(
+      items,
+      ["doi-ca-kq:1:NV001", "bo-sung-kq:2:2026-11-15", "luong:KL202611:Dự kiến"],
+      now
+    );
+    expect(afterReadAll).toEqual([]);
+  });
+
+  it("giới hạn tối đa 50 thông báo trong card khi có nhiều hơn 50 thông báo chưa đọc", () => {
+    const now = new Date("2026-11-16T10:00:00");
+    const items: ThongBaoCoKhoa[] = Array.from({ length: 65 }, (_, i) => ({
+      id: `DC-BULK-${i}`,
+      khoa: `doi-ca-kq:BULK${i}:NV001`,
+      nhom: "thong-tin" as const,
+      mocThoiGian: "2026-11-16T08:00:00",
+      tieuDe: `Thông báo ${i}`,
+      thoiGian: "16/11",
+      chiTiet: `Chi tiết ${i}`,
+    }));
+
+    const unread = filterUnreadNotifications(items, ["doi-ca-kq:BULK0:NV001"], now);
+    expect(unread).toHaveLength(THONG_BAO_TOI_DA_TRONG_DANH_SACH);
+    expect(unread.some((e) => e.item.id === "DC-BULK-0")).toBe(false);
   });
 });

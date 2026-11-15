@@ -2,29 +2,49 @@
 
 import React, { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { AppShell, useAppShellUser } from "@frontend/components/layout/AppShell";
+import { useRouter } from "next/navigation";
+import {
+  AppShell,
+  useAppShellUser,
+  type HeaderThongBaoItem,
+} from "@frontend/components/layout/AppShell";
 import { nowVN } from "@backend/lib/time";
-import { filterAndCapNotifications } from "@frontend/lib/thong-bao-da-doc";
+import { filterUnreadNotifications } from "@frontend/lib/thong-bao-da-doc";
 import type { NhanVienTongQuanData, ThongBaoItem } from "@backend/services/tong-quan";
 import { mapNhanVienDashboardView } from "@frontend/mappers/tong-quan";
 
 function NhanVienThongBaoCard({
   thongBao,
   emptySymbol,
+  isLoading,
 }: {
   thongBao: ThongBaoItem[];
   emptySymbol: string;
+  isLoading: boolean;
 }) {
-  const { readNotificationKeys } = useAppShellUser();
-  const visibleThongBao = useMemo(
-    () =>
-      filterAndCapNotifications(
-        thongBao,
-        readNotificationKeys,
-        nowVN()
-      ).map((entry) => entry.item),
-    [thongBao, readNotificationKeys]
-  );
+  const router = useRouter();
+  const {
+    notifications: shellNotifications,
+    hasLoadedNotifications,
+    isNotificationsReady,
+    readNotificationKeys,
+    activateNotification,
+  } = useAppShellUser();
+
+  const isSyncing = isLoading || !isNotificationsReady;
+  const visibleEntries = useMemo(() => {
+    if (isSyncing) return [];
+    const sourceItems: HeaderThongBaoItem[] = hasLoadedNotifications
+      ? shellNotifications
+      : thongBao;
+    return filterUnreadNotifications(sourceItems, readNotificationKeys, nowVN());
+  }, [
+    isSyncing,
+    hasLoadedNotifications,
+    shellNotifications,
+    thongBao,
+    readNotificationKeys,
+  ]);
 
   return (
     <div className="bg-[#F7F2EB] rounded-[14.4px] border-[1.2px] border-[#7096D1] p-5 sm:p-6 shadow-[0px_4px_16px_0px_rgba(0,0,0,0.08)] flex flex-col">
@@ -32,11 +52,17 @@ function NhanVienThongBaoCard({
         Thông báo của bạn
       </h3>
 
-      <div className="border-[1.2px] border-[#7096D1] rounded-[9.6px] p-4 space-y-4 bg-[#F7F2EB] flex-1">
-        {visibleThongBao.length === 0 ? (
-          <p className="text-xs text-[#334EAC]/70">{emptySymbol}</p>
+      <div
+        data-testid="dashboard-notification-list"
+        className="border-[1.2px] border-[#7096D1] rounded-[9.6px] p-4 space-y-4 bg-[#F7F2EB] flex-1 max-h-80 overflow-y-auto overflow-x-hidden"
+      >
+        {visibleEntries.length === 0 ? (
+          <p className="text-xs text-[#334EAC]/70">
+            {isSyncing ? "..." : emptySymbol}
+          </p>
         ) : (
-          visibleThongBao.map((tb, idx) => {
+          visibleEntries.map((entry, idx) => {
+            const tb = entry.item;
             const content = (
               <div
                 className={`space-y-1 ${
@@ -59,12 +85,31 @@ function NhanVienThongBaoCard({
               <Link
                 key={tb.id}
                 href={tb.link}
-                className="block hover:opacity-85 transition-opacity"
+                data-testid={`dashboard-notification-item-${tb.id}`}
+                data-notification-key={entry.key}
+                onClick={() => activateNotification(tb)}
+                onKeyDown={(e) => {
+                  if (e.key === " " || e.key === "Spacebar") {
+                    e.preventDefault();
+                    activateNotification(tb);
+                    router.push(tb.link!);
+                  }
+                }}
+                className="block w-full text-left min-h-[44px] hover:opacity-85 transition-opacity cursor-pointer"
               >
                 {content}
               </Link>
             ) : (
-              <div key={tb.id}>{content}</div>
+              <button
+                key={tb.id}
+                type="button"
+                data-testid={`dashboard-notification-item-${tb.id}`}
+                data-notification-key={entry.key}
+                onClick={() => activateNotification(tb)}
+                className="block w-full text-left min-h-[44px] hover:opacity-85 transition-opacity cursor-pointer"
+              >
+                {content}
+              </button>
             );
           })
         )}
@@ -248,6 +293,7 @@ export function NhanVienDashboard() {
           <NhanVienThongBaoCard
             thongBao={view.thongBao}
             emptySymbol={view.emptySymbol}
+            isLoading={isLoading}
           />
         </div>
       </div>

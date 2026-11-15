@@ -100,16 +100,29 @@ const AppShellMountedContext = React.createContext<boolean>(false);
 
 export interface AppShellUserContextValue {
   userId: string;
+  notifications: HeaderThongBaoItem[];
+  hasLoadedNotifications: boolean;
+  isNotificationsReady: boolean;
   readNotificationKeys: string[];
   shownNotificationKeys: string[];
   dismissShownNotificationKey: (key: string) => void;
+  markNotificationAsRead: (tb: HeaderThongBaoItem) => void;
+  activateNotification: (
+    tb: HeaderThongBaoItem,
+    options?: { closePopover?: boolean }
+  ) => void;
 }
 
 const AppShellUserContext = React.createContext<AppShellUserContextValue>({
   userId: "",
+  notifications: [],
+  hasLoadedNotifications: false,
+  isNotificationsReady: true,
   readNotificationKeys: [],
   shownNotificationKeys: [],
   dismissShownNotificationKey: () => {},
+  markNotificationAsRead: () => {},
+  activateNotification: () => {},
 });
 
 export function useAppShellUser(): AppShellUserContextValue {
@@ -230,6 +243,8 @@ function AppShellInner({
   const [activeNavId, setActiveNavId] = useState<string>("main");
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
   const [notifications, setNotifications] = useState<HeaderThongBaoItem[]>([]);
+  const [hasLoadedNotifications, setHasLoadedNotifications] = useState(false);
+  const [isNotificationsReady, setIsNotificationsReady] = useState(false);
   const [readNotificationKeys, setReadNotificationKeys] = useState<string[]>([]);
   const [shownNotificationKeys, setShownNotificationKeys] = useState<string[]>([]);
 
@@ -246,6 +261,8 @@ function AppShellInner({
   activeInviteRef.current = activeInvite;
   const userIdRef = useRef<string>(user?.userId || "");
   userIdRef.current = user?.userId || "";
+  const userRoleRef = useRef<"ChuQuan" | "NhanVien" | undefined>(user?.role);
+  userRoleRef.current = user?.role;
   const notificationsRef = useRef<HeaderThongBaoItem[]>(notifications);
   notificationsRef.current = notifications;
   const hasLoadedNotificationsRef = useRef<boolean>(false);
@@ -285,25 +302,11 @@ function AppShellInner({
     }
   }, []);
 
-  const appShellUserContextValue = useMemo<AppShellUserContextValue>(
-    () => ({
-      userId: user?.userId || "",
-      readNotificationKeys,
-      shownNotificationKeys,
-      dismissShownNotificationKey,
-    }),
-    [
-      user?.userId,
-      readNotificationKeys,
-      shownNotificationKeys,
-      dismissShownNotificationKey,
-    ]
-  );
-
   const applyNotificationsUpdate = useCallback(
     (items: HeaderThongBaoItem[], resolvedUserId?: string) => {
       const uid = (resolvedUserId ?? userIdRef.current).trim().toUpperCase();
       hasLoadedNotificationsRef.current = true;
+      setHasLoadedNotifications(true);
 
       if (!uid) {
         const capped = filterAndCapNotifications(items, [], nowVN()).map(
@@ -393,6 +396,11 @@ function AppShellInner({
             resolvedUserId = mapped.userId.trim().toUpperCase();
             userIdRef.current = mapped.userId;
             evictedReadKeysRef.current.clear();
+            const storedRead = readReadNotificationKeys(mapped.userId);
+            if (!areStringListsEqual(readKeysRef.current, storedRead)) {
+              readKeysRef.current = storedRead;
+              setReadNotificationKeys(storedRead);
+            }
             const storedShown = readShownNotificationKeys(mapped.userId);
             shownKeysRef.current = storedShown;
             setShownNotificationKeys(storedShown);
@@ -417,6 +425,10 @@ function AppShellInner({
         }
       } catch {
         // bỏ qua nếu lỗi mạng
+      } finally {
+        if (active) {
+          setIsNotificationsReady(true);
+        }
       }
     }
     loadHeaderData();
@@ -609,6 +621,53 @@ function AppShellInner({
       }
     },
     [applyNotificationsUpdate, dismissShownNotificationKey]
+  );
+
+  const triggerInviteSideEffect = useCallback(
+    (tb: HeaderThongBaoItem) => {
+      if (tb.id.startsWith("TC-MO-") && userRoleRef.current === "NhanVien") {
+        const tcId = tb.id.slice("TC-MO-".length);
+        pendingManualOpenInviteId = tcId;
+        pollThayCaAndNotifications("NhanVien");
+      }
+    },
+    [pollThayCaAndNotifications]
+  );
+
+  const activateNotification = useCallback(
+    (tb: HeaderThongBaoItem, options?: { closePopover?: boolean }) => {
+      markNotificationAsRead(tb);
+      if (options?.closePopover) {
+        setShowNotificationPopup(false);
+      }
+      triggerInviteSideEffect(tb);
+    },
+    [markNotificationAsRead, triggerInviteSideEffect]
+  );
+
+  const appShellUserContextValue = useMemo<AppShellUserContextValue>(
+    () => ({
+      userId: user?.userId || "",
+      notifications,
+      hasLoadedNotifications,
+      isNotificationsReady,
+      readNotificationKeys,
+      shownNotificationKeys,
+      dismissShownNotificationKey,
+      markNotificationAsRead,
+      activateNotification,
+    }),
+    [
+      user?.userId,
+      notifications,
+      hasLoadedNotifications,
+      isNotificationsReady,
+      readNotificationKeys,
+      shownNotificationKeys,
+      dismissShownNotificationKey,
+      markNotificationAsRead,
+      activateNotification,
+    ]
   );
 
   useEffect(() => {
@@ -1074,20 +1133,6 @@ function AppShellInner({
                             </div>
                           );
 
-                          const handleInviteSideEffect = () => {
-                            if (tb.id.startsWith("TC-MO-") && user?.role === "NhanVien") {
-                              const tcId = tb.id.slice("TC-MO-".length);
-                              pendingManualOpenInviteId = tcId;
-                              pollThayCaAndNotifications("NhanVien");
-                            }
-                          };
-
-                          const handleLinkActivate = () => {
-                            markNotificationAsRead(tb);
-                            setShowNotificationPopup(false);
-                            handleInviteSideEffect();
-                          };
-
                           const baseClassName = `block w-full text-left min-h-[44px] hover:bg-[#EBF0FA] transition-colors focus:outline-none focus:bg-[#EBF0FA] cursor-pointer ${
                             isRead ? "opacity-65" : ""
                           }`;
@@ -1099,11 +1144,15 @@ function AppShellInner({
                               data-testid={`notification-item-${tb.id}`}
                               data-notification-key={key}
                               data-read={isRead ? "true" : "false"}
-                              onClick={handleLinkActivate}
+                              onClick={() =>
+                                activateNotification(tb, { closePopover: true })
+                              }
                               onKeyDown={(e) => {
                                 if (e.key === " " || e.key === "Spacebar") {
                                   e.preventDefault();
-                                  handleLinkActivate();
+                                  activateNotification(tb, {
+                                    closePopover: true,
+                                  });
                                   router.push(tb.link!);
                                 }
                               }}
@@ -1118,10 +1167,7 @@ function AppShellInner({
                               data-testid={`notification-item-${tb.id}`}
                               data-notification-key={key}
                               data-read={isRead ? "true" : "false"}
-                              onClick={() => {
-                                markNotificationAsRead(tb);
-                                handleInviteSideEffect();
-                              }}
+                              onClick={() => activateNotification(tb)}
                               className={baseClassName}
                             >
                               {content}

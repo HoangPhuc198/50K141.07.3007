@@ -574,3 +574,24 @@ export function filterAndCapNotifications<
     readKeys
   );
 }
+
+/**
+ * Lọc danh sách thông báo chỉ giữ lại các mục chưa đọc (trừ các mục đã xem),
+ * đồng bộ theo cùng quy tắc hết hạn 7 ngày và giới hạn tối đa 50 mục của hệ thống thông báo.
+ */
+export function filterUnreadNotifications<
+  T extends Pick<ThongBaoCoKhoa, "id" | "khoa" | "suKien" | "nhom" | "mocThoiGian">,
+>(
+  items: ReadonlyArray<T>,
+  readKeys: Iterable<string> = [],
+  now: Date = nowVN(),
+  options?: {
+    expireDays?: number;
+    maxItems?: number;
+    applyCap?: boolean;
+  }
+): Array<SortedNotificationEntry<T>> {
+  return filterAndCapNotifications(items, readKeys, now, options).filter(
+    (entry) => !entry.isRead
+  );
+}

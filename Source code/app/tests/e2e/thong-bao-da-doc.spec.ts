@@ -1233,4 +1233,214 @@ test.describe("Chuông thông báo - Đã đọc / Chưa đọc (Production E2E)
       await cleanupTest8();
     }
   });
+
+  test("9. Dashboard Nhân viên: đồng bộ card Thông báo của bạn, trừ mục đã xem và cuộn gọn trong khung", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext({
+      viewport: { width: 1280, height: 800 },
+    });
+
+    const now = nowVN();
+    const recentIso = formatDateVN(addDaysVN(now, -1));
+    const recentDdMm = `${recentIso.slice(8, 10)}/${recentIso.slice(5, 7)}`;
+
+    const sampleItems = [
+      {
+        id: "DC-NOLINK97",
+        khoa: "doi-ca-kq:DD970099:NV000002",
+        suKien: "doi-ca:DD970099",
+        nhom: "thong-tin" as const,
+        mocThoiGian: `${recentIso}T16:00:00`,
+        tieuDe: "Đơn xin đổi ca đã được xử lý",
+        thoiGian: `Ca tối ${recentDdMm}`,
+        chiTiet: "Thông báo không kèm liên kết điều hướng",
+      },
+      ...buildSampleNvNotifs(),
+    ];
+
+    try {
+      await context.addCookies([
+        {
+          name: AUTH_COOKIE_NAME,
+          value: nv1Token,
+          domain: "localhost",
+          path: "/",
+          httpOnly: true,
+          sameSite: "Lax",
+        },
+      ]);
+
+      let activeItems = sampleItems;
+      await context.route("**/api/thong-bao", async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            ok: true,
+            data: { count: activeItems.length, items: activeItems },
+          }),
+        });
+      });
+
+      const page1 = await context.newPage();
+      const errors1 = trackHydrationAndPageErrors(page1);
+      await page1.goto("/nhan-vien");
+      await page1.evaluate(() => window.localStorage.clear());
+      await page1.reload();
+
+      const bell1 = page1.locator("#topbar-notification-bell");
+      const bellCount1 = page1.getByTestId("notification-bell-count");
+      const list1 = page1.getByTestId("dashboard-notification-list");
+
+      await expect(bellCount1).toHaveText("4");
+      await expect(
+        list1.locator("[data-testid^='dashboard-notification-item-']")
+      ).toHaveCount(4);
+
+      // 1) Đọc 1 mục trong popover chuông -> trừ ngay khỏi card "Thông báo của bạn"
+      await bell1.click();
+      const popover1 = page1.getByTestId("notification-popover");
+      await popover1.getByTestId("notification-item-DC-NOLINK97").click();
+      await expect(bellCount1).toHaveText("3");
+      await expect(
+        list1.getByTestId("dashboard-notification-item-DC-NOLINK97")
+      ).toHaveCount(0);
+      await expect(
+        list1.locator("[data-testid^='dashboard-notification-item-']")
+      ).toHaveCount(3);
+      // Đóng popover
+      await bell1.click();
+
+      // 2) Mở tab thứ 2 đồng thời trên /nhan-vien và kiểm tra đồng bộ qua storage
+      const page2 = await context.newPage();
+      const errors2 = trackHydrationAndPageErrors(page2);
+      await page2.goto("/nhan-vien");
+      const bellCount2 = page2.getByTestId("notification-bell-count");
+      const list2 = page2.getByTestId("dashboard-notification-list");
+      await expect(bellCount2).toHaveText("3");
+      await expect(
+        list2.locator("[data-testid^='dashboard-notification-item-']")
+      ).toHaveCount(3);
+
+      // Click trực tiếp 1 mục có link ngay trong card trên tab 1 -> tab 2 tự trừ ngay lập tức
+      await list1.getByTestId("dashboard-notification-item-BS-YC970010").click();
+      await expect(bellCount2).toHaveText("2");
+      await expect(
+        list2.getByTestId("dashboard-notification-item-BS-YC970010")
+      ).toHaveCount(0);
+
+      // Quay lại /nhan-vien trên tab 1 và reload -> vẫn chỉ còn 2 mục chưa đọc
+      await page1.goto("/nhan-vien");
+      await expect(bellCount1).toHaveText("2");
+      await expect(
+        list1.locator("[data-testid^='dashboard-notification-item-']")
+      ).toHaveCount(2);
+
+      // Nhấn phím Space trên mục link trong card trên tab 1 -> đánh dấu đã đọc & điều hướng
+      const linkItem1 = list1.getByTestId("dashboard-notification-item-DC-DD970010");
+      await linkItem1.focus();
+      await page1.keyboard.press(" ");
+      await expect(bellCount2).toHaveText("1");
+      await expect(
+        list2.locator("[data-testid^='dashboard-notification-item-']")
+      ).toHaveCount(1);
+
+      // Tab 1 quay lại /nhan-vien để theo dõi trực tiếp khi đọc nốt mục cuối từ tab 2
+      await page1.goto("/nhan-vien");
+      await expect(bellCount1).toHaveText("1");
+      await page2.locator("#topbar-notification-bell").click();
+      await page2
+        .getByTestId("notification-popover")
+        .getByTestId("notification-item-BL-KL202611")
+        .click();
+
+      // Khi tất cả đã đọc -> số chuông về "0", card trên tab 1 lập tức về "–" và reload vẫn giữ nguyên
+      await expect(bellCount1).toHaveText("0");
+      await expect(
+        list1.locator("[data-testid^='dashboard-notification-item-']")
+      ).toHaveCount(0);
+      await expect(list1).toContainText("–");
+
+      await page1.reload();
+      await expect(bellCount1).toHaveText("0");
+      await expect(
+        list1.locator("[data-testid^='dashboard-notification-item-']")
+      ).toHaveCount(0);
+      await expect(list1).toContainText("–");
+
+      // 3) Nhiều thông báo chưa đọc -> danh sách cuộn gọn trong khung, không kéo giãn card lương, không tràn ngang
+      activeItems = Array.from({ length: 12 }, (_, i) => ({
+        id: `DC-SCROLL-${String(i).padStart(2, "0")}`,
+        khoa: `doi-ca-kq:SCROLL${i}:NV000002`,
+        suKien: `doi-ca:SCROLL${i}`,
+        nhom: "thong-tin" as const,
+        mocThoiGian: `${recentIso}T12:00:00`,
+        tieuDe: "Yêu cầu bổ sung chấm công đã xử lý",
+        thoiGian: `Ca sáng ${i + 1}`,
+        chiTiet: `Chi tiết thông báo dài kiểm tra cuộn trong khung #${i + 1}`,
+      }));
+
+      await page1.evaluate(() => window.localStorage.clear());
+      await page1.setViewportSize({ width: 1280, height: 800 });
+      await page1.reload();
+
+      await expect(
+        list1.locator("[data-testid^='dashboard-notification-item-']")
+      ).toHaveCount(12);
+
+      const metricsDesktop = await list1.evaluate((el) => ({
+        clientHeight: el.clientHeight,
+        scrollHeight: el.scrollHeight,
+        docScrollWidth: document.documentElement.scrollWidth,
+        docClientWidth: document.documentElement.clientWidth,
+      }));
+      expect(metricsDesktop.clientHeight).toBeLessThanOrEqual(340);
+      expect(metricsDesktop.scrollHeight).toBeGreaterThan(metricsDesktop.clientHeight);
+      expect(metricsDesktop.docScrollWidth).toBeLessThanOrEqual(
+        metricsDesktop.docClientWidth
+      );
+
+      // Card Thông báo của bạn và card Lương bên cạnh không bị kéo dài bất thường
+      const notifCardBox = await list1.locator("..").boundingBox();
+      expect(notifCardBox).not.toBeNull();
+      expect(notifCardBox!.height).toBeLessThan(450);
+
+      const luongCardBox = await page1
+        .locator("main h3", { hasText: /Bảng lương|Lương tháng/ })
+        .locator("xpath=ancestor::div[contains(@class, 'rounded-[14.4px]')]")
+        .boundingBox();
+      expect(luongCardBox).not.toBeNull();
+      expect(luongCardBox!.height).toBeLessThan(500);
+
+      // Kiểm tra responsive mobile 390px: không tràn ngang & nút mục >= 44px
+      await page1.setViewportSize({ width: 390, height: 844 });
+      const firstItemBox = await list1
+        .getByTestId("dashboard-notification-item-DC-SCROLL-00")
+        .boundingBox();
+      expect(firstItemBox).not.toBeNull();
+      expect(firstItemBox!.height).toBeGreaterThanOrEqual(44);
+
+      const hasHorizontalOverflowMobile = await page1.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+      );
+      expect(hasHorizontalOverflowMobile).toBe(false);
+
+      // Click trực tiếp 1 mục không kèm link ngay trong card -> tự trừ ngay tại chỗ & chuông giảm 1
+      await expect(bellCount1).toHaveText("12");
+      await list1.getByTestId("dashboard-notification-item-DC-SCROLL-00").click();
+      await expect(bellCount1).toHaveText("11");
+      await expect(
+        list1.getByTestId("dashboard-notification-item-DC-SCROLL-00")
+      ).toHaveCount(0);
+      await expect(
+        list1.locator("[data-testid^='dashboard-notification-item-']")
+      ).toHaveCount(11);
+
+      expect(errors1).toEqual([]);
+      expect(errors2).toEqual([]);
+    } finally {
+      await context.close();
+    }
+  });
 });
