@@ -1,0 +1,197 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model BangLuong {
+  Mabangluong      String             @id(map: "pk_bangluong") @db.Char(8)
+  Tienthuong       Int                @default(0)
+  Lydothuong       String?            @db.VarChar(200)
+  Lydochinhsua     String?            @db.VarChar(200)
+  Manv             String             @db.Char(8)
+  Makyluong        String             @db.Char(8)
+  KyLuong          KyLuong            @relation(fields: [Makyluong], references: [Makyluong], onDelete: NoAction, onUpdate: NoAction, map: "fk_bangluong_kyluong")
+  NhanVien         NhanVien           @relation(fields: [Manv], references: [Manv], onDelete: NoAction, onUpdate: NoAction, map: "fk_bangluong_nhanvien")
+  ChiTietBangLuong ChiTietBangLuong[]
+  PhanHoiLuong     PhanHoiLuong[]
+
+  @@unique([Manv, Makyluong], map: "uq_bangluong_nvky")
+  @@index([Makyluong], map: "ix_bangluong_makyluong")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model CaLam {
+  Maca        String     @id(map: "pk_calam") @db.Char(8)
+  Loaica      String     @unique(map: "uq_calam_loaica") @db.VarChar(30)
+  Giobatdau   DateTime   @db.Time(6)
+  Gioketthuc  DateTime   @db.Time(6)
+  Sonvquydinh Int
+  LichLam     LichLam[]
+  LichRanh    LichRanh[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ChamCong {
+  Machamcong       String    @id(map: "pk_chamcong") @db.Char(8)
+  Manv             String    @db.Char(8)
+  Malich           String    @db.Char(8)
+  Thoigiancheckin  DateTime?
+  Thoigiancheckout DateTime?
+  LichLam          LichLam   @relation(fields: [Malich], references: [Malich], onDelete: NoAction, onUpdate: NoAction, map: "fk_chamcong_lichlam")
+  NhanVien         NhanVien  @relation(fields: [Manv], references: [Manv], onDelete: NoAction, onUpdate: NoAction, map: "fk_chamcong_nhanvien")
+
+  @@unique([Manv, Malich], map: "uq_chamcong_nvlich")
+  @@index([Malich], map: "ix_chamcong_malich")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ChiTietBangLuong {
+  MaCTBL      String     @id(map: "pk_chitietbangluong") @db.Char(8)
+  Ngaylam     DateTime   @db.Date
+  Giolam      Decimal    @db.Decimal(5, 2)
+  Mucluong    Int
+  Mabangluong String     @db.Char(8)
+  Maheso      String?    @db.Char(8)
+  BangLuong   BangLuong  @relation(fields: [Mabangluong], references: [Mabangluong], onDelete: NoAction, onUpdate: NoAction, map: "fk_ctbl_bangluong")
+  HeSoLuong   HeSoLuong? @relation(fields: [Maheso], references: [Maheso], onDelete: NoAction, onUpdate: NoAction, map: "fk_ctbl_heso")
+
+  @@unique([Mabangluong, Ngaylam], map: "uq_ctbl_bangngay")
+  @@index([Mabangluong], map: "ix_ctbl_mabangluong")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model ChuQuan {
+  Machuquan   String @id(map: "pk_chuquan") @db.Char(8)
+  Tendangnhap String @unique(map: "uq_chuquan_tendangnhap") @db.VarChar(50)
+  Matkhau     String @db.VarChar(255)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model DonXinDoiCa {
+  Madon                                       String    @id(map: "pk_donxindoica") @db.Char(8)
+  Trangthaixuly                               String    @default("ChÆ°a xá»­ lÃ½") @db.VarChar(30)
+  Manv                                        String    @db.Char(8)
+  Malich                                      String    @db.Char(8)
+  Manvnhanthay                                String?   @db.Char(8)
+  LichLam                                     LichLam   @relation(fields: [Malich], references: [Malich], onDelete: NoAction, onUpdate: NoAction, map: "fk_don_lichlam")
+  NhanVien_DonXinDoiCa_ManvToNhanVien         NhanVien  @relation("DonXinDoiCa_ManvToNhanVien", fields: [Manv], references: [Manv], onDelete: NoAction, onUpdate: NoAction, map: "fk_don_nhanvien")
+  NhanVien_DonXinDoiCa_ManvnhanthayToNhanVien NhanVien? @relation("DonXinDoiCa_ManvnhanthayToNhanVien", fields: [Manvnhanthay], references: [Manv], onDelete: NoAction, onUpdate: NoAction, map: "fk_don_nvnhanthay")
+
+  @@index([Trangthaixuly], map: "ix_don_trangthai")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model HeSoLuong {
+  Maheso           String             @id(map: "pk_hesoluong") @db.Char(8)
+  Ngaybatdau       DateTime           @db.Date
+  Ngayketthuc      DateTime           @db.Date
+  Heso             Decimal            @db.Decimal(5, 2)
+  ChiTietBangLuong ChiTietBangLuong[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model KyLuong {
+  Makyluong String      @id(map: "pk_kyluong") @db.Char(8)
+  Thang     Int         @db.SmallInt
+  Nam       Int         @db.SmallInt
+  Trangthai String      @default("ChÆ°a tÃ­nh") @db.VarChar(30)
+  Ngaychot  DateTime?   @db.Date
+  BangLuong BangLuong[]
+
+  @@unique([Thang, Nam], map: "uq_kyluong_thangnam")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model LichLam {
+  Malich           String             @id(map: "pk_lichlam") @db.Char(8)
+  Ngaylam          DateTime           @db.Date
+  Maca             String             @db.Char(8)
+  ChamCong         ChamCong[]
+  DonXinDoiCa      DonXinDoiCa[]
+  CaLam            CaLam              @relation(fields: [Maca], references: [Maca], onDelete: NoAction, onUpdate: NoAction, map: "fk_lichlam_calam")
+  NhanVien_LichLam NhanVien_LichLam[]
+  YeuCauBoSungCC   YeuCauBoSungCC[]
+
+  @@unique([Ngaylam, Maca], map: "uq_lichlam_ngayca")
+  @@index([Ngaylam], map: "ix_lichlam_ngaylam")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model LichRanh {
+  Malichranh String   @id(map: "pk_lichranh") @db.Char(8)
+  Manv       String   @db.Char(8)
+  Ngayranh   DateTime @db.Date
+  Caranh     String   @db.Char(8)
+  CaLam      CaLam    @relation(fields: [Caranh], references: [Maca], onDelete: NoAction, onUpdate: NoAction, map: "fk_lichranh_calam")
+  NhanVien   NhanVien @relation(fields: [Manv], references: [Manv], onDelete: NoAction, onUpdate: NoAction, map: "fk_lichranh_nhanvien")
+
+  @@unique([Manv, Ngayranh, Caranh], map: "uq_lichranh")
+  @@index([Ngayranh], map: "ix_lichranh_ngayranh")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model NhanVien {
+  Manv                                           String             @id(map: "pk_nhanvien") @db.Char(8)
+  Tendangnhap                                    String             @unique(map: "uq_nhanvien_tendangnhap") @db.Char(8)
+  Matkhau                                        String             @db.VarChar(255)
+  Hoten                                          String             @db.VarChar(50)
+  Sdt                                            String             @unique(map: "uq_nhanvien_sdt") @db.Char(10)
+  Diachi                                         String             @db.VarChar(200)
+  Truonghoc                                      String?            @db.VarChar(100)
+  Vitrilamviec                                   String             @db.VarChar(50)
+  Hinhthuclam                                    String             @db.VarChar(30)
+  Ngayvaolam                                     DateTime           @db.Date
+  Kinhnghiem                                     String             @db.VarChar(200)
+  Trangthai                                      String             @default("Thá»­ viá»‡c") @db.VarChar(30)
+  Mucluongtheogio                                Int
+  BangLuong                                      BangLuong[]
+  ChamCong                                       ChamCong[]
+  DonXinDoiCa_DonXinDoiCa_ManvToNhanVien         DonXinDoiCa[]      @relation("DonXinDoiCa_ManvToNhanVien")
+  DonXinDoiCa_DonXinDoiCa_ManvnhanthayToNhanVien DonXinDoiCa[]      @relation("DonXinDoiCa_ManvnhanthayToNhanVien")
+  LichRanh                                       LichRanh[]
+  NhanVien_LichLam                               NhanVien_LichLam[]
+  YeuCauBoSungCC                                 YeuCauBoSungCC[]
+}
+
+model NhanVien_LichLam {
+  Manv     String   @db.Char(8)
+  Malich   String   @db.Char(8)
+  LichLam  LichLam  @relation(fields: [Malich], references: [Malich], onDelete: NoAction, onUpdate: NoAction, map: "fk_nvll_lichlam")
+  NhanVien NhanVien @relation(fields: [Manv], references: [Manv], onDelete: NoAction, onUpdate: NoAction, map: "fk_nvll_nhanvien")
+
+  @@id([Manv, Malich], map: "pk_nhanvien_lichlam")
+  @@index([Malich], map: "ix_nvll_malich")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model PhanHoiLuong {
+  Maphanhoi   String    @id(map: "pk_phanhoiluong") @db.Char(8)
+  Noidung     String    @db.VarChar(500)
+  Ngaygui     DateTime  @default(dbgenerated("((now() AT TIME ZONE 'Asia/Ho_Chi_Minh'::text))::date")) @db.Date
+  Ngayxuly    DateTime? @db.Date
+  Trangthai   String    @default("ChÆ°a xá»­ lÃ½") @db.VarChar(30)
+  Mabangluong String    @db.Char(8)
+  BangLuong   BangLuong @relation(fields: [Mabangluong], references: [Mabangluong], onDelete: NoAction, onUpdate: NoAction, map: "fk_phanhoi_bangluong")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model YeuCauBoSungCC {
+  Mayeucau     String    @id(map: "pk_yeucaubosungcc") @db.Char(8)
+  Giovaobosung DateTime? @db.Time(6)
+  Giorabosung  DateTime  @db.Time(6)
+  Lydo         String    @db.VarChar(200)
+  Trangthai    String    @default("ChÆ°a xá»­ lÃ½") @db.VarChar(30)
+  Manv         String    @db.Char(8)
+  Malich       String    @db.Char(8)
+  LichLam      LichLam   @relation(fields: [Malich], references: [Malich], onDelete: NoAction, onUpdate: NoAction, map: "fk_yeucau_lichlam")
+  NhanVien     NhanVien  @relation(fields: [Manv], references: [Manv], onDelete: NoAction, onUpdate: NoAction, map: "fk_yeucau_nhanvien")
+
+  @@index([Trangthai], map: "ix_yeucau_trangthai")
+}

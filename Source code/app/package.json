@@ -1,0 +1,57 @@
+{
+  "name": "thanhha-coffee",
+  "version": "0.1.0",
+  "private": true,
+  "prisma": {
+    "schema": "database/prisma/schema.prisma"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "postinstall": "prisma generate",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest run tests/phan-quyen.test.ts tests/unit/login.test.ts tests/unit/lib.test.ts tests/unit/pg.test.ts tests/unit/menu-routes.test.ts tests/unit/khong-link-figma.test.ts tests/unit/uc-6.3-seed-hop-le.test.ts tests/unit/uc-6.3-chong-quay-lai.test.ts tests/unit/thong-bao-da-doc.test.ts",
+    "test:layout": "playwright test tests/e2e/layout.spec.ts",
+    "test:visual": "playwright test tests/e2e/visual-login.spec.ts",
+    "test:dieu-huong": "playwright test tests/e2e/dieu-huong.spec.ts",
+    "test:all": "vitest run",
+    "db:init": "node --env-file=.env database/sql/pg-local.mjs init",
+    "db:start": "node --env-file=.env database/sql/pg-local.mjs start",
+    "db:stop": "node --env-file=.env database/sql/pg-local.mjs stop",
+    "db:status": "node --env-file=.env database/sql/pg-local.mjs status",
+    "db:destroy": "node --env-file=.env database/sql/pg-local.mjs destroy",
+    "db:reset": "node --env-file=.env database/sql/run-sql.mjs reset",
+    "db:setpw": "node --env-file=.env database/sql/set-passwords.mjs",
+    "db:pull": "prisma db pull && prisma generate",
+    "check": "npm run lint && tsc --noEmit && npm run test && npm run build"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.4.1",
+    "jose": "^5.9.6",
+    "next": "^15.1.7",
+    "pg": "^8.23.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.1",
+    "@types/node": "^20.17.19",
+    "@types/pg": "^8.23.1",
+    "@types/pixelmatch": "^5.2.6",
+    "@types/pngjs": "^6.0.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^9.20.1",
+    "eslint-config-next": "^15.1.7",
+    "pixelmatch": "^8.0.0",
+    "pngjs": "^7.0.0",
+    "postcss": "^8.5.2",
+    "prisma": "^6.4.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  }
+}

@@ -1,0 +1,15 @@
+.fieldsContainer {
+  container-type: inline-size;
+}
+
+.timePairGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@container (min-width: 520px) {
+  .timePairGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

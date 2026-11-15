@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #FFF9F0;
+  color: #334EAC;
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Đảm bảo không tràn màn hình theo chiều ngang */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Tránh trình duyệt điện thoại (iOS Safari/WebView) tự zoom to khi chạm ô nhập có font-size < 16px */
+@media (max-width: 767px) {
+  input:not([type="checkbox"]):not([type="radio"]):not(.sr-only),
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}

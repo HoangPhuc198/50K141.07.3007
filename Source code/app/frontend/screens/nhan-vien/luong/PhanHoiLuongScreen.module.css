@@ -1,0 +1,15 @@
+.fieldsContainer {
+  container-type: inline-size;
+}
+
+.fieldsGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+@container (min-width: 530px) {
+  .fieldsGrid {
+    grid-template-columns: minmax(0, 1.85fr) minmax(0, 1fr);
+  }
+}

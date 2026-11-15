@@ -1,0 +1,37 @@
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+.env
+**/.env
+!.env.example
+!**/.env.example
+app/database/data/
+app/database/backups/*.bak
+*.mdf
+*.ldf
+.DS_Store
+test-results/
+*.tsbuildinfo
+
+# Ảnh tạm sinh ra khi chạy test:visual (không commit). Ảnh chụp lưu để xem tay (vd *_390px.png, *_1920x1080.png) vẫn được commit.
+docs/ket-qua/*_actual.png
+docs/ket-qua/*_diff.png
+
+
+# Bien moi truong va lien ket Vercel (khong commit)
+.env.*
+**/.env.*
+!.env.example
+!**/.env.example
+.vercel
+**/.vercel
+.trash-vercel-link/
+
+# Thu muc tam, prompt noi bo va du lieu sinh cuc bo (khong dua len repo)
+.antigravity/
+prompts/
+docs/ke-hoach/PROMPTS-*.md
+docs/ke-hoach/PROMPT-CHUYEN-POSTGRES.md
+
+audit-run/

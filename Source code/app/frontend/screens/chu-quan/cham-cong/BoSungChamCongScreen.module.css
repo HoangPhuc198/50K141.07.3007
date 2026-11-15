@@ -1,0 +1,25 @@
+.fieldsContainer {
+  container-type: inline-size;
+}
+
+.checkOutPairGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.checkInPairGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@container (min-width: 460px) {
+  .checkOutPairGrid {
+    grid-template-columns: minmax(0, 56fr) minmax(0, 44fr);
+  }
+
+  .checkInPairGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

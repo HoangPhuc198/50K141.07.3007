@@ -1,0 +1,338 @@
+{
+  "screens": {
+    "dang-nhap": {
+      "path": "/dang-nhap",
+      "figma": "UC_1_dang-nhap_01.png",
+      "threshold": 0.1,
+      "maxDiffPercent": 3
+    },
+    "chu-quan-main": {
+      "path": "/chu-quan",
+      "figma": "00_man-hinh-chinh_chu-quan.png",
+      "threshold": 0.1,
+      "maxDiffPercent": 5
+    },
+    "nhan-vien-main": {
+      "path": "/nhan-vien",
+      "figma": "00_man-hinh-chinh_nhan-vien.png",
+      "threshold": 0.1,
+      "maxDiffPercent": 5
+    },
+    "uc-5.1-them": {
+      "path": "/chu-quan/nhan-vien/them",
+      "figma": "UC_5.1_them-thong-tin-nhan-vien_01.png",
+      "threshold": 0.1,
+      "maxDiffPercent": 8
+    },
+    "uc-5.2-sua": {
+      "path": "/chu-quan/nhan-vien/sua",
+      "figma": "UC_5.2_sua-thong-tin-nhan-vien_01.png",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "title-area-chip",
+          "x": 650,
+          "y": 120,
+          "width": 550,
+          "height": 60
+        }
+      ]
+    },
+    "uc-5.4-xem": {
+      "path": "/chu-quan/nhan-vien/xem",
+      "figma": "UC_5.4_xem-thong-tin-nhan-vien_01.png",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "title-area-chip",
+          "x": 280,
+          "y": 90,
+          "width": 550,
+          "height": 60
+        }
+      ]
+    },
+    "uc-5.3-xoa": {
+      "path": "/chu-quan/nhan-vien/xoa",
+      "figma": "UC_5.3_xoa-thong-tin-nhan-vien_01.png",
+      "threshold": 0.1,
+      "maxDiffPercent": 8
+    },
+    "uc-8.1-muc-luong": {
+      "path": "/chu-quan/luong/muc-luong",
+      "figma": "UC_8.1_cap-nhat-muc-luong_01.png",
+      "threshold": 0.1,
+      "maxDiffPercent": 8
+    },
+    "uc-2.1-lich-ranh": {
+      "path": "/nhan-vien/ca-lam/lich-ranh",
+      "figma": "UC_2.1_dang-ky-lich-ranh_01.png",
+      "role": "NhanVien",
+      "threshold": 0.1,
+      "maxDiffPercent": 8
+    },
+    "uc-6.1-xep-lich": {
+      "path": "/chu-quan/lich-lam/xep-lich",
+      "figma": "UC_6.1_xep-lich-lam_01.png",
+      "role": "ChuQuan",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-6.2-xep-ca": {
+      "path": "/chu-quan/lich-lam/xep-ca",
+      "figma": "UC_6.2_xep-ca-lam_01.png",
+      "role": "ChuQuan",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-3.1-check-in": {
+      "path": "/nhan-vien/cham-cong/check-in",
+      "figma": "UC_3.1_check-in_01.png",
+      "role": "NhanVien",
+      "threshold": 0.1,
+      "maxDiffPercent": 8
+    },
+    "uc-3.2-check-out": {
+      "path": "/nhan-vien/cham-cong/check-out",
+      "figma": "UC_3.2_check-out_01.png",
+      "role": "NhanVien",
+      "threshold": 0.1,
+      "maxDiffPercent": 8
+    },
+    "uc-3.3-bo-sung": {
+      "path": "/nhan-vien/cham-cong/bo-sung",
+      "figma": "UC_3.3_gui-yeu-cau-bo-sung-cham-cong_01.png",
+      "role": "NhanVien",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-7.1-bo-sung": {
+      "path": "/chu-quan/cham-cong/bo-sung",
+      "figma": "UC_7.1_bo-sung-cham-cong_01.png",
+      "role": "ChuQuan",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-7.2-bao-cao": {
+      "path": "/chu-quan/cham-cong/bao-cao",
+      "figma": "UC_7.2_xem-bao-cao-cham-cong_01.png",
+      "role": "ChuQuan",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-2.2-doi-ca": {
+      "path": "/nhan-vien/ca-lam/doi-ca",
+      "figma": "UC_2.2_yeu-cau-doi-ca_01.png",
+      "role": "NhanVien",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-6.3-doi-ca": {
+      "path": "/chu-quan/lich-lam/doi-ca",
+      "figma": "UC_6.3_xu-ly-doi-ca_01.png",
+      "role": "ChuQuan",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        },
+        {
+          "name": "block-preview-lich",
+          "x": 1105,
+          "y": 405,
+          "width": 650,
+          "height": 175
+        }
+      ]
+    },
+    "uc-8.4-he-so": {
+      "path": "/chu-quan/luong/he-so",
+      "figma": "UC_8.4_nhap-he-so-luong_01.png",
+      "role": "ChuQuan",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-8.5-tien-thuong": {
+      "path": "/chu-quan/luong/tien-thuong",
+      "figma": "UC_8.5_nhap-tien-thuong_01.png",
+      "role": "ChuQuan",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-8.2-tinh-luong": {
+      "path": "/chu-quan/luong/tinh-luong",
+      "figma": "UC_8.2_tinh-luong_01.png",
+      "role": "ChuQuan",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-4.1-xem-bang-luong": {
+      "path": "/nhan-vien/luong/xem",
+      "figma": "UC_4.1_xem-bang-luong_01.png",
+      "role": "NhanVien",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-4.2-phan-hoi": {
+      "path": "/nhan-vien/luong/phan-hoi",
+      "figma": "UC_4.2_phan-hoi-sai-sot-luong_01.png",
+      "role": "NhanVien",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-8.3-chinh-sua": {
+      "path": "/chu-quan/luong/chinh-sua",
+      "figma": "UC_8.3_chinh-sua-sai-sot-bang-luong_01.png",
+      "role": "ChuQuan",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-8.6-chot": {
+      "path": "/chu-quan/luong/chot-luong",
+      "figma": "UC_8.6_chot-bang-luong_01.png",
+      "role": "ChuQuan",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    },
+    "uc-2.3-thay-ca": {
+      "path": "/nhan-vien/ca-lam/thay-ca",
+      "figma": "UC_2.3_thay-ca_01.png",
+      "role": "NhanVien",
+      "threshold": 0.1,
+      "maxDiffPercent": 8,
+      "masks": [
+        {
+          "name": "sidebar",
+          "x": 0,
+          "y": 0,
+          "width": 336,
+          "height": 1080
+        }
+      ]
+    }
+  }
+}
